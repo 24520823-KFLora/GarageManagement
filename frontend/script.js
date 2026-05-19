@@ -2,7 +2,7 @@
 
 // KHI CHẠY DƯỚI MÁY MÌNH (LOCALHOST): dùng cổng 5000 của server
 // KHI NÀO DEPLOY LÊN RENDER THÌ ĐỔI THÀNH LINK RENDER CỦA BẠN (Ví dụ: https://gara-backend.onrender.com/api)
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://garageweb.onrender.com/api";
 
 // Hàm chuyển đổi qua lại giữa các màn hình (Tabs)
 function switchTab(tabId) {

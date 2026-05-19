@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GARA AUTO - Hệ thống Quản lý Gara</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <div class="w-64 bg-slate-900 text-white flex flex-col shadow-xl">
+            <div class="p-5 text-xl font-bold tracking-wider border-b border-slate-800 flex items-center gap-3">
+                <i class="fa-solid fa-car-wrench text-blue-400"></i> GARA AUTO
+            </div>
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-600 font-medium transition">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                </button>
+                <button onclick="switchTab('customers')" id="btn-customers" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
+                    <i class="fa-solid fa-users w-5"></i> Khách hàng & Xe
+                </button>
+                <button onclick="switchTab('repair')" id="btn-repair" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
+                    <i class="fa-solid fa-file-invoice w-5"></i> Phiếu sửa chữa
+                </button>
+                <button onclick="switchTab('invoices')" id="btn-invoices" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
+                    <i class="fa-solid fa-receipt w-5"></i> Hóa đơn
+                </button>
+                <button onclick="switchTab('parts')" id="btn-parts" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
+                    <i class="fa-solid fa-boxes-stacked w-5"></i> Kho phụ tùng
+                </button>
+                <button onclick="switchTab('reports')" id="btn-reports" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
+                    <i class="fa-solid fa-chart-line w-5"></i> Báo cáo doanh thu
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+                SE104 - Demo Quản Lý Gara
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
+            <div id="tab-dashboard" class="tab-content p-8 space-y-8">
+                <h2 class="text-3xl font-bold text-slate-800">Dashboard (Tổng quan)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="p-4 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-file-prescription text-2xl"></i></div>
+                        <div><p class="text-sm text-slate-500 font-medium">Phiếu sửa chữa</p><h3 id="stat-orders" class="text-2xl font-bold">0</h3></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="p-4 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-user-group text-2xl"></i></div>
+                        <div><p class="text-sm text-slate-500 font-medium">Khách hàng</p><h3 id="stat-customers" class="text-2xl font-bold">0</h3></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="p-4 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-coins text-2xl"></i></div>
+                        <div><p class="text-sm text-slate-500 font-medium">Doanh thu (đ)</p><h3 id="stat-revenue" class="text-2xl font-bold">0</h3></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="p-4 bg-purple-50 text-purple-600 rounded-xl"><i class="fa-solid fa-warehouse text-2xl"></i></div>
+                        <div><p class="text-sm text-slate-500 font-medium">Phụ tùng trong kho</p><h3 id="stat-parts" class="text-2xl font-bold">0</h3></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-bold mb-4">Phiếu sửa chữa gần đây</h3>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-slate-400 text-sm font-medium">
+                                <th class="pb-3">Mã phiếu</th><th class="pb-3">Khách hàng</th><th class="pb-3">Biển số xe</th><th class="pb-3">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-recent-orders" class="text-sm divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-customers" class="tab-content p-8 space-y-6 hidden">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-slate-800">Quản lý khách hàng & Xe</h2>
+                    <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 shadow-sm flex items-center gap-2"><i class="fa-solid fa-plus"></i> Thêm khách hàng</button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm font-medium">
+                            <tr>
+                                <th class="p-4">STT</th><th class="p-4">Họ và tên</th><th class="p-4">SĐT</th><th class="p-4">Địa chỉ</th><th class="p-4">Xe (Biển số - Hãng)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-repair" class="tab-content p-8 space-y-6 hidden">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-slate-800">Phiếu tiếp nhận sửa chữa</h2>
+                    <button onclick="openRepairModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 shadow-sm flex items-center gap-2"><i class="fa-solid fa-plus"></i> Tạo phiếu mới</button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm font-medium">
+                            <tr>
+                                <th class="p-4">Mã phiếu</th><th class="p-4">Chủ xe</th><th class="p-4">Biển số</th><th class="p-4">Ngày tiếp nhận</th><th class="p-4">Trạng thái</th><th class="p-4">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repair-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-invoices" class="tab-content p-8 space-y-6 hidden">
+                <h2 class="text-3xl font-bold text-slate-800">Hóa đơn thanh toán</h2>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm font-medium">
+                            <tr>
+                                <th class="p-4">Mã HĐ</th><th class="p-4">Mã Phiếu</th><th class="p-4">Ngày lập</th><th class="p-4">Tiền công</th><th class="p-4">Tiền phụ tùng</th><th class="p-4">Tổng tiền (VND)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoice-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-parts" class="tab-content p-8 space-y-6 hidden">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-slate-800">Quản lý kho phụ tùng</h2>
+                    <button onclick="openPartModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 shadow-sm flex items-center gap-2"><i class="fa-solid fa-plus"></i> Nhập hàng mới</button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm font-medium">
+                            <tr>
+                                <th class="p-4">Mã phụ tùng</th><th class="p-4">Tên vật tư</th><th class="p-4">Đơn vị</th><th class="p-4">Giá bán (đ)</th><th class="p-4">Tồn kho</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parts-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-reports" class="tab-content p-8 space-y-6 hidden">
+                <h2 class="text-3xl font-bold text-slate-800">Báo cáo doanh thu</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-bold mb-4">Tổng kết hoạt động tài chính</h3>
+                    <div class="p-6 bg-slate-900 text-white rounded-xl space-y-2 max-w-sm">
+                        <p class="text-sm text-slate-400">Doanh thu tích lũy hệ thống</p>
+                        <p id="report-total-revenue" class="text-3xl font-mono font-bold text-emerald-400">0 đ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="customer-modal" class="fixed inset-0 bg-black/50 items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-2xl w-96 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold">Thêm Khách Hàng & Xe Mới</h3>
+            <div class="space-y-3">
+                <input id="input-cust-name" type="text" placeholder="Họ và tên chủ xe" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm">
+                <input id="input-cust-phone" type="text" placeholder="Số điện thoại" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm">
+                <input id="input-cust-address" type="text" placeholder="Địa chỉ" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm">
+                <hr class="border-slate-100">
+                <input id="input-car-plate" type="text" placeholder="Biển số xe (Ví dụ: 30A-123.45)" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+                <input id="input-car-brand" type="text" placeholder="Hãng xe (Ví dụ: Toyota)" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm">
+            </div>
+            <div class="flex justify-end gap-2 text-sm pt-2">
+                <button onclick="closeCustomerModal()" class="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50">Hủy</button>
+                <button onclick="saveCustomer()" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700">Lưu lại</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="repair-modal" class="fixed inset-0 bg-black/50 items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-2xl w-96 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold">Tạo Phiếu Sửa Chữa Mới</h3>
+            <div class="space-y-3 text-sm">
+                <label class="block font-medium">Chọn Xe sửa chữa:</label>
+                <select id="select-vehicle" class="w-full p-2.5 border border-slate-200 rounded-xl bg-white"></select>
+                <label class="block font-medium">Tình trạng/Yêu cầu sửa chữa:</label>
+                <textarea id="input-repair-note" placeholder="Ví dụ: Xe kêu ở gầm, kiểm tra phanh..." class="w-full p-2.5 border border-slate-200 rounded-xl h-20"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 text-sm pt-2">
+                <button onclick="closeRepairModal()" class="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50">Hủy</button>
+                <button onclick="saveRepairOrder()" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700">Tạo phiếu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

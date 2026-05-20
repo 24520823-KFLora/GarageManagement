@@ -1,147 +1,1183 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GARA AUTO - Quản lý Gara Ô tô</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoCare — Quản Lý Gara</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    /* ── Reset & Variables ────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f12;
+      --bg2:       #13161b;
+      --bg3:       #1a1e26;
+      --bg4:       #21262f;
+      --border:    #2a2f3a;
+      --border2:   #353b48;
+      --text:      #e8eaf0;
+      --text2:     #9aa0b0;
+      --text3:     #5c6478;
+      --accent:    #f97316;
+      --accent2:   #fb923c;
+      --accentbg:  rgba(249,115,22,0.10);
+      --accentbg2: rgba(249,115,22,0.18);
+      --green:     #22c55e;
+      --greenbg:   rgba(34,197,94,0.10);
+      --red:       #ef4444;
+      --redbg:     rgba(239,68,68,0.10);
+      --yellow:    #eab308;
+      --yellowbg:  rgba(234,179,8,0.10);
+      --blue:      #3b82f6;
+      --bluebg:    rgba(59,130,246,0.10);
+      --sidebar-w: 240px;
+      --topbar-h:  60px;
+      --radius:    10px;
+      --radius-sm: 6px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.4);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --font:      'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --font-display: 'Syne', sans-serif;
+      --transition: 0.18s ease;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; overflow: hidden; }
+
+    /* ── Scrollbar ────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ── LOGIN PAGE ───────────────────────────────────────── */
+    #login-page {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      z-index: 1000;
+    }
+    #login-page::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(249,115,22,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 80% 20%, rgba(59,130,246,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .login-box {
+      width: 420px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px 40px;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      animation: loginIn 0.4s ease;
+    }
+    @keyframes loginIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+    .login-logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 32px;
+    }
+    .login-logo-icon {
+      width: 42px; height: 42px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: white;
+    }
+    .login-logo-text { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text); }
+    .login-logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.5px; }
+    .login-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .login-sub { color: var(--text2); font-size: 13px; margin-bottom: 32px; }
+    .login-error { background: var(--redbg); border: 1px solid var(--red); color: var(--red); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display: none; }
+    .login-error.show { display: block; }
+
+    /* ── Form Controls ────────────────────────────────────── */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 10px 14px;
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      appearance: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accentbg);
+    }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field select { cursor: pointer; }
+    .field select option { background: var(--bg3); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+    /* ── Buttons ──────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; outline: none;
+      transition: all var(--transition);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(249,115,22,0.35); }
+    .btn-secondary { background: var(--bg4); color: var(--text); border: 1px solid var(--border2); }
+    .btn-secondary:hover { background: var(--bg3); border-color: var(--border2); }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+    .btn-danger { background: var(--redbg); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+    .btn-danger:hover { background: var(--red); color: white; }
+    .btn-success { background: var(--greenbg); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+    .btn-success:hover { background: var(--green); color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-full { width: 100%; }
+    .btn-icon { padding: 8px; width: 34px; height: 34px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── APP SHELL ────────────────────────────────────────── */
+    #app { display: none; height: 100vh; flex-direction: column; }
+    #app.visible { display: flex; }
+
+    /* Topbar */
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 20px 0 0;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .topbar-logo {
+      width: var(--sidebar-w);
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 20px;
+      border-right: 1px solid var(--border);
+      height: 100%;
+      flex-shrink: 0;
+    }
+    .topbar-logo-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; color: white;
+    }
+    .topbar-logo-name { font-family: var(--font-display); font-weight: 800; font-size: 16px; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .topbar-page-title { margin-left: 20px; font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--text2); }
+    .topbar-user {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .topbar-user-avatar {
+      width: 26px; height: 26px;
+      background: var(--accentbg2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--accent); font-weight: 600;
+    }
+    .topbar-user-name { font-size: 13px; font-weight: 500; }
+    .topbar-user-role { font-size: 10px; color: var(--text3); }
+
+    /* Body layout */
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto; overflow-x: hidden;
+      flex-shrink: 0;
+      padding: 12px 0;
+    }
+    .sidebar-section { margin-bottom: 4px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 600; color: var(--text3);
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 8px 20px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 20px;
+      color: var(--text2); font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left;
+      border-radius: 0;
+      transition: all var(--transition);
+      position: relative;
+    }
+    .nav-item:hover { color: var(--text); background: var(--bg3); }
+    .nav-item.active {
+      color: var(--accent);
+      background: var(--accentbg);
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute; left: 0; top: 4px; bottom: 4px;
+      width: 3px; background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+    .nav-item i { width: 16px; text-align: center; font-size: 13px; }
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red);
+      color: white;
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 20px;
+      min-width: 18px; text-align: center;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1; overflow-y: auto;
+      padding: 24px;
+      background: var(--bg);
+    }
+
+    /* ── Pages ────────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 24px; gap: 16px;
+    }
+    .page-header h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+    .page-header p { color: var(--text2); font-size: 13px; margin-top: 3px; }
+    .page-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+
+    /* ── Cards ────────────────────────────────────────────── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-family: var(--font-display); font-weight: 600; font-size: 14px; }
+    .card-body { padding: 20px; }
+
+    /* ── Stats Grid ───────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .stat-card:hover { border-color: var(--border2); }
+    .stat-card::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+    .stat-card.orange::after { background: var(--accent); }
+    .stat-card.green::after { background: var(--green); }
+    .stat-card.blue::after { background: var(--blue); }
+    .stat-card.yellow::after { background: var(--yellow); }
+    .stat-card.red::after { background: var(--red); }
+    .stat-icon {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; margin-bottom: 14px;
+    }
+    .stat-icon.orange { background: var(--accentbg); color: var(--accent); }
+    .stat-icon.green { background: var(--greenbg); color: var(--green); }
+    .stat-icon.blue { background: var(--bluebg); color: var(--blue); }
+    .stat-icon.yellow { background: var(--yellowbg); color: var(--yellow); }
+    .stat-icon.red { background: var(--redbg); color: var(--red); }
+    .stat-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 12px; color: var(--text3); font-weight: 500; }
+
+    /* ── Table ────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 11px; font-weight: 600;
+      color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px; color: var(--text);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background var(--transition); }
+    tbody tr:hover { background: var(--bg3); }
+    .td-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+    /* ── Badges / Tags ────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-orange { background: var(--accentbg); color: var(--accent); }
+    .badge-green  { background: var(--greenbg);  color: var(--green); }
+    .badge-red    { background: var(--redbg);    color: var(--red); }
+    .badge-yellow { background: var(--yellowbg); color: var(--yellow); }
+    .badge-blue   { background: var(--bluebg);   color: var(--blue); }
+    .badge-gray   { background: var(--bg4);      color: var(--text2); }
+
+    /* ── Search / Filter bar ──────────────────────────────── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .search-input-wrap {
+      position: relative; flex: 1; min-width: 200px;
+    }
+    .search-input-wrap i {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--text3); font-size: 13px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 9px 14px 9px 36px;
+      font-family: var(--font); font-size: 13px;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .filter-select {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text2);
+      padding: 9px 14px;
+      font-family: var(--font); font-size: 13px;
+      outline: none; cursor: pointer; appearance: none;
+      padding-right: 30px;
+      min-width: 130px;
+    }
+    .filter-select:focus { border-color: var(--accent); color: var(--text); }
+
+    /* ── Empty state ──────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text3);
+    }
+    .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Modal ────────────────────────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 900;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; animation: fadeIn 0.15s ease; }
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.2s ease;
+    }
+    .modal.modal-lg { max-width: 760px; }
+    .modal.modal-xl { max-width: 960px; }
+    @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:none; opacity:1; } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--bg2); z-index: 1;
+    }
+    .modal-title { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+    .modal-body { padding: 24px; }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-close {
+      width: 30px; height: 30px;
+      background: var(--bg4); border: none;
+      border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2); font-size: 16px;
+      transition: all var(--transition);
+    }
+    .btn-close:hover { background: var(--redbg); color: var(--red); }
+
+    /* ── Toast ────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: var(--shadow);
+      animation: toastIn 0.3s ease;
+      min-width: 260px; max-width: 360px;
+      font-size: 13px;
+    }
+    @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error   { border-left: 3px solid var(--red); }
+    .toast.info    { border-left: 3px solid var(--blue); }
+    .toast i { font-size: 15px; flex-shrink: 0; }
+    .toast.success i { color: var(--green); }
+    .toast.error   i { color: var(--red); }
+    .toast.info    i { color: var(--blue); }
+
+    /* ── Loading ──────────────────────────────────────────── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay {
+      position: absolute; inset: 0;
+      background: rgba(13,15,18,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; border-radius: inherit;
+    }
+
+    /* ── Divider ──────────────────────────────────────────── */
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── Chips ────────────────────────────────────────────── */
+    .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      background: var(--bg4); border: 1px solid var(--border2);
+      border-radius: 20px; font-size: 12px; color: var(--text2);
+    }
+    .chip .remove { cursor: pointer; color: var(--text3); transition: color var(--transition); }
+    .chip .remove:hover { color: var(--red); }
+
+    /* ── Text helpers ─────────────────────────────────────── */
+    .text-accent { color: var(--accent); }
+    .text-green  { color: var(--green); }
+    .text-red    { color: var(--red); }
+    .text-yellow { color: var(--yellow); }
+    .text-muted  { color: var(--text3); }
+    .text-mono   { font-family: var(--font-mono); }
+    .text-right  { text-align: right; }
+    .text-center { text-align: center; }
+    .font-bold   { font-weight: 600; }
+    .mt-8  { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+
+    /* ── Detail Section ───────────────────────────────────── */
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .detail-item label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 4px; }
+    .detail-item span { font-size: 14px; font-weight: 500; }
+
+    /* ── Invoice ──────────────────────────────────────────── */
+    .invoice-table td:last-child, .invoice-table th:last-child { text-align: right; }
+    .invoice-total {
+      display: flex; justify-content: flex-end;
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .invoice-total-box { min-width: 240px; }
+    .invoice-total-row {
+      display: flex; justify-content: space-between;
+      padding: 5px 0; font-size: 13px; color: var(--text2);
+    }
+    .invoice-total-row.grand {
+      font-size: 16px; font-weight: 700; color: var(--accent);
+      border-top: 1px solid var(--border); margin-top: 8px; padding-top: 10px;
+    }
+
+    /* ── Dashboard chart placeholder ─────────────────────── */
+    .chart-bars {
+      display: flex; align-items: flex-end; gap: 6px;
+      height: 100px; padding: 0 4px;
+    }
+    .chart-bar {
+      flex: 1; background: var(--accentbg);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.4s ease;
+      position: relative; cursor: default;
+    }
+    .chart-bar:hover { background: var(--accentbg2); }
+    .chart-bar.active { background: var(--accent); }
+
+    /* ── Repair order detail sidebar ─────────────────────── */
+    .order-detail-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
+    @media (max-width: 900px) { .order-detail-layout { grid-template-columns: 1fr; } }
+
+    /* ── Role guard ───────────────────────────────────────── */
+    [data-role-hide] { display: none !important; }
+
+    /* ── Misc ─────────────────────────────────────────────── */
+    .separator { height: 1px; background: var(--border); margin: 6px 0; }
+    .nowrap { white-space: nowrap; }
+    .plate-badge {
+      font-family: var(--font-mono);
+      background: var(--bg4); border: 1px solid var(--border2);
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.5px;
+    }
+    .amount { font-family: var(--font-mono); font-weight: 500; }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-800">
+<body>
 
-    <div class="flex h-screen overflow-hidden">
-        <div class="w-64 bg-slate-900 text-white flex flex-col shadow-xl">
-            <div class="p-5 text-xl font-bold tracking-wider border-b border-slate-800 flex items-center gap-3">
-                <i class="fa-solid fa-car-wrench text-blue-400"></i> GARA AUTO
-            </div>
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-600 font-medium transition">
-                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
-                </button>
-                <button onclick="switchTab('customers')" id="btn-customers" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
-                    <i class="fa-solid fa-users w-5"></i> Khách hàng & Xe
-                </button>
-                <button onclick="switchTab('repair')" id="btn-repair" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
-                    <i class="fa-solid fa-file-invoice w-5"></i> Phiếu sửa chữa
-                </button>
-                <button onclick="switchTab('invoices')" id="btn-invoices" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
-                    <i class="fa-solid fa-receipt w-5"></i> Hóa đơn
-                </button>
-                <button onclick="switchTab('parts')" id="btn-parts" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-400 transition">
-                    <i class="fa-solid fa-boxes-stacked w-5"></i> Kho phụ tùng
-                </button>
-            </nav>
-            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">UIT - SE104</div>
-        </div>
-
-        <div class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
-            <div id="tab-dashboard" class="tab-content p-8 space-y-8">
-                <h2 class="text-3xl font-bold text-slate-800">Tổng quan Gara (Dashboard)</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div class="p-4 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-file-prescription text-2xl"></i></div>
-                        <div><p class="text-sm text-slate-500 font-medium">Phiếu sửa chữa</p><h3 id="stat-orders" class="text-2xl font-bold">0</h3></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div class="p-4 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-user-group text-2xl"></i></div>
-                        <div><p class="text-sm text-slate-500 font-medium">Khách hàng</p><h3 id="stat-customers" class="text-2xl font-bold">0</h3></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div class="p-4 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-coins text-2xl"></i></div>
-                        <div><p class="text-sm text-slate-500 font-medium">Doanh thu</p><h3 id="stat-revenue" class="text-2xl font-bold">0 đ</h3></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-customers" class="tab-content p-8 space-y-6 hidden">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-3xl font-bold text-slate-800">Danh sách Khách hàng & Xe</h2>
-                    <button onclick="openModal('customer-modal')" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 flex items-center gap-2 text-sm font-medium"><i class="fa-solid fa-plus"></i> Thêm khách hàng</button>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 text-sm font-semibold border-b border-slate-200">
-                            <tr><th class="p-4">STT</th><th class="p-4">Họ và tên</th><th class="p-4">SĐT</th><th class="p-4">Địa chỉ</th><th class="p-4">Xe (Biển số - Hãng)</th></tr>
-                        </thead>
-                        <tbody id="customer-table-body" class="text-sm divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-repair" class="tab-content p-8 space-y-6 hidden">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-3xl font-bold text-slate-800">Phiếu tiếp nhận sửa chữa</h2>
-                    <button onclick="openRepairModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 flex items-center gap-2 text-sm font-medium"><i class="fa-solid fa-plus"></i> Tiếp nhận xe</button>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 text-sm font-semibold border-b border-slate-200">
-                            <tr><th class="p-4">Mã phiếu</th><th class="p-4">Chủ xe</th><th class="p-4">Biển số</th><th class="p-4">Ngày nhận</th><th class="p-4">Trạng thái</th><th class="p-4">Hành động</th></tr>
-                        </thead>
-                        <tbody id="repair-table-body" class="text-sm divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-invoices" class="tab-content p-8 space-y-6 hidden">
-                <h2 class="text-3xl font-bold text-slate-800">Hóa đơn thanh toán</h2>
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 text-sm font-semibold border-b border-slate-200">
-                            <tr><th class="p-4">Mã HĐ</th><th class="p-4">Mã Phiếu</th><th class="p-4">Ngày lập</th><th class="p-4">Tiền công</th><th class="p-4">Tiền phụ tùng</th><th class="p-4">Tổng tiền</th></tr>
-                        </thead>
-                        <tbody id="invoice-table-body" class="text-sm divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-parts" class="tab-content p-8 space-y-6 hidden">
-                <h2 class="text-3xl font-bold text-slate-800">Quản lý kho phụ tùng</h2>
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 text-sm font-semibold border-b border-slate-200">
-                            <tr><th class="p-4">Mã vật tư</th><th class="p-4">Tên phụ tùng</th><th class="p-4">Đơn vị</th><th class="p-4">Giá bán</th><th class="p-4">Tồn kho</th></tr>
-                        </thead>
-                        <tbody id="parts-table-body" class="text-sm divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<!-- ═══════════════ LOGIN PAGE ═══════════════ -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="fas fa-wrench"></i></div>
+      <div>
+        <div class="login-logo-text">AutoCare</div>
+        <div class="login-logo-sub">GARAGE MANAGEMENT</div>
+      </div>
     </div>
-
-    <div id="customer-modal" class="fixed inset-0 bg-black/50 items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-2xl w-96 space-y-4 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-800">Thêm Khách Hàng & Xe Mới</h3>
-            <div class="space-y-3">
-                <input id="in-name" type="text" placeholder="Họ và tên chủ xe" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
-                <input id="in-phone" type="text" placeholder="Số điện thoại" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
-                <input id="in-address" type="text" placeholder="Địa chỉ" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
-                <input id="in-plate" type="text" placeholder="Biển số xe (Ví dụ: 30A-123.45)" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-mono focus:outline-blue-500">
-                <input id="in-brand" type="text" placeholder="Hãng xe (Ví dụ: Toyota)" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
-            </div>
-            <div class="flex justify-end gap-2 text-sm font-medium pt-2">
-                <button onclick="closeModal('customer-modal')" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50">Hủy</button>
-                <button onclick="addCustomer()" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700">Lưu thông tin</button>
-            </div>
-        </div>
+    <div class="login-title">Xin chào!</div>
+    <div class="login-sub">Đăng nhập để tiếp tục</div>
+    <div class="login-error" id="login-error"></div>
+    <div class="field">
+      <label>Tài khoản</label>
+      <input id="login-username" type="text" placeholder="admin" value="admin" />
     </div>
-
-    <div id="repair-modal" class="fixed inset-0 bg-black/50 items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-2xl w-96 space-y-4 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-800">Lập Phiếu Tiếp Nhận Sửa Chữa</h3>
-            <div class="space-y-3">
-                <label class="block text-xs font-semibold text-slate-500 uppercase">Chọn xe trong hệ thống:</label>
-                <select id="select-vehicle" class="w-full p-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-blue-500"></select>
-                <label class="block text-xs font-semibold text-slate-500 uppercase">Yêu cầu sửa chữa:</label>
-                <input id="in-note" type="text" placeholder="Ví dụ: Thay dầu, kiểm tra phanh..." class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
-            </div>
-            <div class="flex justify-end gap-2 text-sm font-medium pt-2">
-                <button onclick="closeModal('repair-modal')" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50">Hủy</button>
-                <button onclick="createRepairOrder()" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700">Lập phiếu</button>
-            </div>
-        </div>
+    <div class="field">
+      <label>Mật khẩu</label>
+      <input id="login-password" type="password" placeholder="••••••••" value="admin123" />
     </div>
+    <button class="btn btn-primary btn-full mt-16" id="login-btn">
+      <i class="fas fa-sign-in-alt"></i> Đăng nhập
+    </button>
+    <div class="mt-16 text-muted text-center" style="font-size:12px">admin / admin123 &nbsp;·&nbsp; lethan1 / 123456 &nbsp;·&nbsp; kythu1 / 123456</div>
+  </div>
+</div>
 
-    <script src="script.js"></script>
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon"><i class="fas fa-wrench"></i></div>
+      <div class="topbar-logo-name">AutoCare</div>
+    </div>
+    <span class="topbar-page-title" id="topbar-title">Dashboard</span>
+    <div class="topbar-right">
+      <div class="topbar-user" id="user-menu-btn">
+        <div class="topbar-user-avatar" id="user-avatar">A</div>
+        <div>
+          <div class="topbar-user-name" id="user-display-name">Admin</div>
+          <div class="topbar-user-role" id="user-display-role">Quản lý</div>
+        </div>
+        <i class="fas fa-chevron-down" style="font-size:10px;color:var(--text3);margin-left:4px"></i>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="app-body">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Tổng quan</div>
+        <button class="nav-item active" data-page="dashboard">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Vận hành</div>
+        <button class="nav-item" data-page="repair-orders">
+          <i class="fas fa-clipboard-list"></i> Phiếu sửa chữa
+          <span class="nav-badge" id="badge-pending" style="display:none">0</span>
+        </button>
+        <button class="nav-item" data-page="appointments">
+          <i class="fas fa-calendar-alt"></i> Lịch hẹn
+          <span class="nav-badge" id="badge-appt" style="display:none">0</span>
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Quản lý</div>
+        <button class="nav-item" data-page="customers">
+          <i class="fas fa-users"></i> Khách hàng
+        </button>
+        <button class="nav-item" data-page="vehicles">
+          <i class="fas fa-car"></i> Xe
+        </button>
+        <button class="nav-item" data-page="services">
+          <i class="fas fa-tools"></i> Dịch vụ
+        </button>
+        <button class="nav-item" data-page="parts">
+          <i class="fas fa-cogs"></i> Phụ tùng
+        </button>
+      </div>
+      <div class="sidebar-section" id="admin-nav">
+        <div class="sidebar-label">Quản trị</div>
+        <button class="nav-item" data-page="invoices">
+          <i class="fas fa-file-invoice-dollar"></i> Hóa đơn
+        </button>
+        <button class="nav-item" data-page="reports">
+          <i class="fas fa-chart-bar"></i> Báo cáo
+        </button>
+        <button class="nav-item" data-page="staff">
+          <i class="fas fa-user-tie"></i> Nhân viên
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main" id="main-content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Tổng quan hoạt động gara hôm nay</p>
+          </div>
+          <div class="page-actions">
+            <span class="text-muted" id="dash-date" style="font-size:12px"></span>
+          </div>
+        </div>
+        <div class="stats-grid" id="dash-stats"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="dash-lower">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Phiếu sửa gần đây</span>
+              <button class="btn btn-ghost btn-sm" onclick="navigate('repair-orders')">Xem tất cả</button>
+            </div>
+            <div id="dash-recent-orders"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Lịch hẹn sắp tới</span>
+              <button class="btn btn-ghost btn-sm" onclick="navigate('appointments')">Xem tất cả</button>
+            </div>
+            <div id="dash-upcoming-appts"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CUSTOMERS ── -->
+      <div class="page" id="page-customers">
+        <div class="page-header">
+          <div><h1>Khách hàng</h1><p>Quản lý thông tin khách hàng</p></div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="openCustomerModal()"><i class="fas fa-plus"></i> Thêm khách hàng</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <div class="search-input-wrap"><i class="fas fa-search"></i><input class="search-input" id="customer-search" placeholder="Tìm theo tên, SĐT..." oninput="loadCustomers()" /></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Tên khách hàng</th><th>SĐT</th><th>Địa chỉ</th><th>Số xe</th><th>Ngày tạo</th><th></th></tr></thead>
+              <tbody id="customer-table"></tbody>
+            </table>
+          </div>
+          <div id="customer-empty" class="empty-state" style="display:none"><i class="fas fa-users"></i><p>Chưa có khách hàng nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── VEHICLES ── -->
+      <div class="page" id="page-vehicles">
+        <div class="page-header">
+          <div><h1>Xe</h1><p>Quản lý phương tiện khách hàng</p></div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="openVehicleModal()"><i class="fas fa-plus"></i> Thêm xe</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <div class="search-input-wrap"><i class="fas fa-search"></i><input class="search-input" id="vehicle-search" placeholder="Biển số, hãng xe, chủ xe..." oninput="loadVehicles()" /></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Biển số</th><th>Hãng / Dòng xe</th><th>Màu / Năm</th><th>Chủ xe</th><th>SĐT</th><th></th></tr></thead>
+              <tbody id="vehicle-table"></tbody>
+            </table>
+          </div>
+          <div id="vehicle-empty" class="empty-state" style="display:none"><i class="fas fa-car"></i><p>Chưa có xe nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── SERVICES ── -->
+      <div class="page" id="page-services">
+        <div class="page-header">
+          <div><h1>Dịch vụ</h1><p>Quản lý các dịch vụ sửa chữa</p></div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="add-service-btn" onclick="openServiceModal()"><i class="fas fa-plus"></i> Thêm dịch vụ</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Tên dịch vụ</th><th>Mô tả</th><th>Giá</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr></thead>
+              <tbody id="service-table"></tbody>
+            </table>
+          </div>
+          <div id="service-empty" class="empty-state" style="display:none"><i class="fas fa-tools"></i><p>Chưa có dịch vụ nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── PARTS ── -->
+      <div class="page" id="page-parts">
+        <div class="page-header">
+          <div><h1>Phụ tùng</h1><p>Quản lý kho phụ tùng</p></div>
+          <div class="page-actions">
+            <button class="btn btn-ghost btn-sm" onclick="loadParts(true)"><i class="fas fa-exclamation-triangle text-yellow"></i> Sắp hết hàng</button>
+            <button class="btn btn-primary" id="add-part-btn" onclick="openPartModal()"><i class="fas fa-plus"></i> Thêm phụ tùng</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Tên phụ tùng</th><th>Đơn vị</th><th>Đơn giá</th><th>Tồn kho</th><th>Tối thiểu</th><th></th></tr></thead>
+              <tbody id="part-table"></tbody>
+            </table>
+          </div>
+          <div id="part-empty" class="empty-state" style="display:none"><i class="fas fa-cogs"></i><p>Chưa có phụ tùng nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── REPAIR ORDERS ── -->
+      <div class="page" id="page-repair-orders">
+        <div class="page-header">
+          <div><h1>Phiếu sửa chữa</h1><p>Quản lý tiếp nhận và sửa chữa</p></div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="openRepairOrderModal()"><i class="fas fa-plus"></i> Tạo phiếu</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <div class="search-input-wrap"><i class="fas fa-search"></i><input class="search-input" id="order-search" placeholder="Biển số, tên khách hàng, SĐT..." oninput="loadRepairOrders()" /></div>
+          <select class="filter-select" id="order-status-filter" onchange="loadRepairOrders()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="tiep_nhan">Tiếp nhận</option>
+            <option value="dang_sua">Đang sửa</option>
+            <option value="hoan_thanh">Hoàn thành</option>
+            <option value="da_thanh_toan">Đã thanh toán</option>
+            <option value="huy">Hủy</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Biển số</th><th>Khách hàng</th><th>Trạng thái</th><th>Nhân viên</th><th>Tổng tiền</th><th>Ngày tạo</th><th></th></tr></thead>
+              <tbody id="order-table"></tbody>
+            </table>
+          </div>
+          <div id="order-empty" class="empty-state" style="display:none"><i class="fas fa-clipboard-list"></i><p>Chưa có phiếu sửa nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── APPOINTMENTS ── -->
+      <div class="page" id="page-appointments">
+        <div class="page-header">
+          <div><h1>Lịch hẹn</h1><p>Quản lý đặt lịch sửa chữa</p></div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="openAppointmentModal()"><i class="fas fa-plus"></i> Tạo lịch hẹn</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="appt-status-filter" onchange="loadAppointments()">
+            <option value="">Tất cả</option>
+            <option value="cho_xac_nhan">Chờ xác nhận</option>
+            <option value="da_xac_nhan">Đã xác nhận</option>
+            <option value="hoan_thanh">Hoàn thành</option>
+            <option value="huy">Hủy</option>
+          </select>
+          <input type="date" class="filter-select" id="appt-date-filter" onchange="loadAppointments()" />
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Khách hàng</th><th>SĐT</th><th>Xe</th><th>Giờ hẹn</th><th>Ghi chú</th><th>Trạng thái</th><th></th></tr></thead>
+              <tbody id="appt-table"></tbody>
+            </table>
+          </div>
+          <div id="appt-empty" class="empty-state" style="display:none"><i class="fas fa-calendar-alt"></i><p>Chưa có lịch hẹn nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── INVOICES ── -->
+      <div class="page" id="page-invoices">
+        <div class="page-header">
+          <div><h1>Hóa đơn</h1><p>Lịch sử thanh toán</p></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#HĐ</th><th>Khách hàng</th><th>Xe</th><th>Dịch vụ</th><th>Phụ tùng</th><th>Giảm giá</th><th>Tổng</th><th>PT thanh toán</th><th>Ngày</th><th></th></tr></thead>
+              <tbody id="invoice-table"></tbody>
+            </table>
+          </div>
+          <div id="invoice-empty" class="empty-state" style="display:none"><i class="fas fa-file-invoice"></i><p>Chưa có hóa đơn nào</p></div>
+        </div>
+      </div>
+
+      <!-- ── REPORTS ── -->
+      <div class="page" id="page-reports">
+        <div class="page-header">
+          <div><h1>Báo cáo</h1><p>Thống kê doanh thu và dịch vụ</p></div>
+          <div class="page-actions">
+            <select class="filter-select" id="report-period">
+              <option value="day">Theo ngày</option>
+              <option value="month" selected>Theo tháng</option>
+              <option value="year">Theo năm</option>
+            </select>
+            <input type="month" class="filter-select" id="report-month" />
+            <input type="number" class="filter-select" id="report-year" style="width:90px" placeholder="Năm" />
+            <button class="btn btn-primary btn-sm" onclick="loadReports()"><i class="fas fa-sync"></i> Tải</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-header"><span class="card-title" id="report-chart-title">Doanh thu theo tháng</span></div>
+            <div class="card-body">
+              <div class="chart-bars" id="revenue-chart"></div>
+              <div id="report-table-wrap" class="mt-16">
+                <table class="invoice-table">
+                  <thead><tr><th>Kỳ</th><th class="text-right">Doanh thu</th><th class="text-right">Số hóa đơn</th></tr></thead>
+                  <tbody id="report-revenue-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Top dịch vụ</span></div>
+            <div class="card-body">
+              <div id="report-services-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STAFF ── -->
+      <div class="page" id="page-staff">
+        <div class="page-header">
+          <div><h1>Nhân viên</h1><p>Quản lý tài khoản nhân viên</p></div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="openStaffModal()"><i class="fas fa-plus"></i> Thêm nhân viên</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Tên nhân viên</th><th>Tài khoản</th><th>Vai trò</th><th>SĐT</th><th>Ngày tạo</th><th></th></tr></thead>
+              <tbody id="staff-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Customer Modal -->
+<div class="modal-backdrop" id="modal-customer">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="customer-modal-title">Thêm khách hàng</span>
+      <button class="btn-close" onclick="closeModal('modal-customer')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="customer-id" />
+      <div class="field"><label>Tên khách hàng *</label><input id="customer-name" placeholder="Nguyễn Văn A" /></div>
+      <div class="field-row">
+        <div class="field"><label>Số điện thoại *</label><input id="customer-phone" placeholder="09xxxxxxxx" /></div>
+        <div class="field"><label>Địa chỉ</label><input id="customer-address" placeholder="123 Đường ABC, Q.1" /></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-customer')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveCustomer()"><i class="fas fa-save"></i> Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vehicle Modal -->
+<div class="modal-backdrop" id="modal-vehicle">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="vehicle-modal-title">Thêm xe</span>
+      <button class="btn-close" onclick="closeModal('modal-vehicle')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="vehicle-id" />
+      <div class="field"><label>Chủ xe *</label><select id="vehicle-customer-id"></select></div>
+      <div class="field-row">
+        <div class="field"><label>Biển số *</label><input id="vehicle-plate" placeholder="51A-12345" style="text-transform:uppercase" /></div>
+        <div class="field"><label>Hãng xe *</label><input id="vehicle-brand" placeholder="Toyota" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Dòng xe *</label><input id="vehicle-model" placeholder="Camry" /></div>
+        <div class="field"><label>Màu sắc</label><input id="vehicle-color" placeholder="Đen" /></div>
+      </div>
+      <div class="field"><label>Năm sản xuất</label><input id="vehicle-year" type="number" placeholder="2020" min="1990" max="2030" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-vehicle')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveVehicle()"><i class="fas fa-save"></i> Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Service Modal -->
+<div class="modal-backdrop" id="modal-service">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="service-modal-title">Thêm dịch vụ</span>
+      <button class="btn-close" onclick="closeModal('modal-service')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="service-id" />
+      <div class="field"><label>Tên dịch vụ *</label><input id="service-name" placeholder="Thay dầu máy" /></div>
+      <div class="field"><label>Mô tả</label><input id="service-desc" placeholder="Mô tả dịch vụ..." /></div>
+      <div class="field-row">
+        <div class="field"><label>Giá (VNĐ) *</label><input id="service-price" type="number" placeholder="250000" min="0" /></div>
+        <div class="field"><label>Thời gian (phút)</label><input id="service-duration" type="number" placeholder="60" min="5" /></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-service')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveService()"><i class="fas fa-save"></i> Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Part Modal -->
+<div class="modal-backdrop" id="modal-part">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="part-modal-title">Thêm phụ tùng</span>
+      <button class="btn-close" onclick="closeModal('modal-part')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="part-id" />
+      <div class="field"><label>Tên phụ tùng *</label><input id="part-name" placeholder="Dầu nhớt Castrol" /></div>
+      <div class="field-row">
+        <div class="field"><label>Đơn vị</label><input id="part-unit" placeholder="cái, lít, bộ..." /></div>
+        <div class="field"><label>Đơn giá (VNĐ) *</label><input id="part-price" type="number" placeholder="150000" min="0" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Số lượng tồn kho</label><input id="part-stock" type="number" placeholder="0" min="0" /></div>
+        <div class="field"><label>Mức tồn tối thiểu</label><input id="part-min-stock" type="number" placeholder="5" min="0" /></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-part')">Hủy</button>
+      <button class="btn btn-primary" onclick="savePart()"><i class="fas fa-save"></i> Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restock Modal -->
+<div class="modal-backdrop" id="modal-restock">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <span class="modal-title">Nhập thêm hàng</span>
+      <button class="btn-close" onclick="closeModal('modal-restock')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="restock-part-id" />
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px" id="restock-part-name"></p>
+      <div class="field"><label>Số lượng nhập thêm *</label><input id="restock-qty" type="number" min="1" placeholder="10" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-restock')">Hủy</button>
+      <button class="btn btn-success" onclick="doRestock()"><i class="fas fa-plus"></i> Nhập kho</button>
+    </div>
+  </div>
+</div>
+
+<!-- Repair Order Modal (Create) -->
+<div class="modal-backdrop" id="modal-repair-order">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Tạo phiếu sửa chữa</span>
+      <button class="btn-close" onclick="closeModal('modal-repair-order')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Khách hàng *</label><select id="ro-customer-id" onchange="loadVehiclesForCustomer()"></select></div>
+      <div class="field"><label>Xe *</label><select id="ro-vehicle-id"></select></div>
+      <div class="field"><label>Nhân viên phụ trách</label><select id="ro-staff-id"></select></div>
+      <div class="field"><label>Tình trạng xe ban đầu</label><textarea id="ro-condition" placeholder="Mô tả tình trạng xe khi tiếp nhận..."></textarea></div>
+      <div class="field"><label>Ghi chú</label><textarea id="ro-note" placeholder="Ghi chú thêm..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-repair-order')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveRepairOrder()"><i class="fas fa-save"></i> Tạo phiếu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Repair Order Detail Modal -->
+<div class="modal-backdrop" id="modal-order-detail">
+  <div class="modal modal-xl">
+    <div class="modal-header">
+      <span class="modal-title" id="order-detail-title">Chi tiết phiếu sửa</span>
+      <button class="btn-close" onclick="closeModal('modal-order-detail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="order-detail-body"></div>
+  </div>
+</div>
+
+<!-- Invoice Modal -->
+<div class="modal-backdrop" id="modal-invoice">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Lập hóa đơn thanh toán</span>
+      <button class="btn-close" onclick="closeModal('modal-invoice')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="inv-order-id" />
+      <div id="inv-summary"></div>
+      <div class="divider"></div>
+      <div class="field-row">
+        <div class="field"><label>Giảm giá (VNĐ)</label><input id="inv-discount" type="number" min="0" value="0" onchange="calcInvoiceTotal()" /></div>
+        <div class="field"><label>Phương thức thanh toán</label>
+          <select id="inv-payment">
+            <option value="tien_mat">💵 Tiền mặt</option>
+            <option value="chuyen_khoan">🏦 Chuyển khoản</option>
+          </select>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:16px;margin-top:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text2)"><span>Tiền dịch vụ</span><span id="inv-svc-total" class="amount">0 đ</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text2)"><span>Tiền phụ tùng</span><span id="inv-parts-total" class="amount">0 đ</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--red)"><span>Giảm giá</span><span id="inv-discount-display" class="amount">0 đ</span></div>
+        <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);font-size:18px;font-weight:700;color:var(--accent)"><span>Tổng cộng</span><span id="inv-grand-total" class="amount">0 đ</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-invoice')">Hủy</button>
+      <button class="btn btn-primary" onclick="createInvoice()"><i class="fas fa-file-invoice"></i> Xuất hóa đơn</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Detail Modal -->
+<div class="modal-backdrop" id="modal-invoice-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title" id="inv-detail-title">Chi tiết hóa đơn</span>
+      <button class="btn-close" onclick="closeModal('modal-invoice-detail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="inv-detail-body"></div>
+  </div>
+</div>
+
+<!-- Appointment Modal -->
+<div class="modal-backdrop" id="modal-appointment">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Tạo lịch hẹn</span>
+      <button class="btn-close" onclick="closeModal('modal-appointment')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Khách hàng *</label><select id="appt-customer-id" onchange="loadVehiclesForAppt()"></select></div>
+      <div class="field"><label>Xe</label><select id="appt-vehicle-id"><option value="">-- Chọn xe --</option></select></div>
+      <div class="field"><label>Ngày giờ hẹn *</label><input id="appt-datetime" type="datetime-local" /></div>
+      <div class="field"><label>Ghi chú</label><textarea id="appt-note" placeholder="Khách hàng muốn kiểm tra..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-appointment')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveAppointment()"><i class="fas fa-save"></i> Tạo lịch</button>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Modal -->
+<div class="modal-backdrop" id="modal-staff">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="staff-modal-title">Thêm nhân viên</span>
+      <button class="btn-close" onclick="closeModal('modal-staff')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="staff-id" />
+      <div class="field-row">
+        <div class="field"><label>Tên nhân viên *</label><input id="staff-name" placeholder="Nguyễn Văn A" /></div>
+        <div class="field"><label>SĐT</label><input id="staff-phone" placeholder="09xxxxxxxx" /></div>
+      </div>
+      <div class="field"><label>Tài khoản *</label><input id="staff-username" placeholder="nhanvien1" /></div>
+      <div class="field"><label>Mật khẩu <span id="staff-pwd-hint" style="font-weight:400;color:var(--text3)">(để trống = không đổi)</span></label><input id="staff-password" type="password" placeholder="••••••••" /></div>
+      <div class="field"><label>Vai trò *</label>
+        <select id="staff-role">
+          <option value="nhan_vien_le_tan">Nhân viên lễ tân</option>
+          <option value="nhan_vien_ky_thuat">Nhân viên kỹ thuật</option>
+          <option value="quan_ly">Quản lý</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-staff')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveStaff()"><i class="fas fa-save"></i> Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="script.js"></script>
 </body>
 </html>

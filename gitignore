@@ -1,0 +1,33 @@
+# ==================================================
+# AutoGara — .gitignore
+# ==================================================
+
+# Biến môi trường — KHÔNG BAO GIỜ commit file này
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime
+pids/
+*.pid
+
+# Build output (nếu sau này thêm bundler)
+dist/
+build/
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
